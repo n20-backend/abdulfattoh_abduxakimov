@@ -1,0 +1,62 @@
+CREATE DATABASE bookstore;
+\c bookstore;
+
+CREATE TABLE IF NOT EXISTS author (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name VARCHAR(255) NOT NULL,
+    bio TEXT,
+    birthdate DATE,
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS genre (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name VARCHAR(255) NOT NULL,
+    description TEXT,
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TYPE BOOK_STATUS AS ENUM('available', 'out of stock', 'discontinued');
+
+CREATE TABLE IF NOT EXISTS book (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    title VARCHAR(255) NOT NULL,
+    authorId UUID NOT NULL REFERENCES author(id) ON DELETE CASCADE,
+    genreId UUID NOT NULL REFERENCES genre(id) ON DELETE CASCADE,
+    price DECIMAL(10, 2) NOT NULL,
+    stock INTEGER NOT NULL,
+    publishedDate DATE NOT NULL,
+    status BOOK_STATUS NOT NULL,
+    imageUrls TEXT[],
+    description TEXT,
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TYPE USER_ROLE AS ENUM('user', 'admin', 'superadmin');
+CREATE TYPE USER_STATUS AS ENUM('active', 'inactive');
+
+CREATE TABLE IF NOT EXISTS users (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    email VARCHAR(255) UNIQUE NOT NULL,
+    username VARCHAR(255) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    role USER_ROLE NOT NULL,
+    status USER_STATUS NOT NULL,
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TYPE ORDER_STATUS AS ENUM('pending', 'completed', 'canceled');
+
+CREATE TABLE IF NOT EXISTS orders (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    userId UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    items JSONB NOT NULL,
+    totalPrice DECIMAL(10, 2) NOT NULL,
+    status ORDER_STATUS NOT NULL,
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
