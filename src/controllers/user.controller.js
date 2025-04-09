@@ -1,9 +1,35 @@
 import { v4 } from 'uuid';
-import { hash } from 'bcrypt';
+import { compare, hash } from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import { verifyToken } from '../middleware/verifyToken.js';
 
 import {pool} from '../config/pg.js';
 
 export const userController = {
+    signInUser: async (req, res, next) => {
+        try {
+            const { email, password } = req.body;
+            const query = `SELECT * FROM users WHERE email = $1`;
+            const values = [email];
+            const result = await pool.query(query, values);
+            const user = result.rows[0];
+
+            if (!user) {
+                return res.status(404).json({ message: 'User not found' });
+            }
+
+            const isPasswordValid = await compare(password, user.password);
+            if (!isPasswordValid) {
+                return res.status(401).json({ message: 'Invalid password' });
+            }
+
+            const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+            res.status(200).json({ token });
+        }
+        catch (error) {
+            next(error);
+        }
+    },
     createUser: async (req, res, next) => {
         try {
             const { body } = req;
@@ -16,7 +42,7 @@ export const userController = {
             if (!user) {
                 return res.status(400).json({ message: 'User creation failed' });
             }
-            res.status(201).json({ userId: user.id, message: 'User created' });
+            res.status(201).json({ message: 'User created', userId: user.id });
         }
         catch (error) {
             next(error);
