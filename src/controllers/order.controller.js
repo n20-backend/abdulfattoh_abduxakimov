@@ -1,5 +1,6 @@
 import { v4 } from 'uuid';
 import {pool} from '../config/pg.js';
+import { json } from 'express';
 
 export const orderController = {
     createOrder: async (req, res, next) => {
@@ -7,7 +8,7 @@ export const orderController = {
             const { body } = req;
             const query = `INSERT INTO orders (id, userId, items, totalPrice, status)
                            VALUES ($1, $2, $3, $4, $5) RETURNING id`;
-            const values = [v4(), body.userId, body.items, body.totalPrice, body.status];
+                           const values = [v4(), body.userId, JSON.stringify(body.items), body.totalPrice, body.status];
             const result = await pool.query(query, values);
             const order = result.rows[0];
             if (!order) {
@@ -61,7 +62,7 @@ export const orderController = {
 
             const updatedOrder = {
                 userId: body.userId || oldOrder.userId,
-                items: body.items || oldOrder.items,
+                items: JSON.stringify(body.items) || oldOrder.items,
                 totalPrice: body.totalPrice || oldOrder.totalPrice,
                 status: body.status || oldOrder.status,
                 updatedAt: new Date().toISOString()

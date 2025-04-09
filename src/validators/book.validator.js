@@ -6,10 +6,10 @@ export const bookSchema = z.object({
     genreId: z.string().uuid(),
     price: z.number().positive(),
     stock: z.number().int().nonnegative(),
-    publishedDate: z.date().optional(),
-    status: z.enum(['available', 'out of stock', 'discontinued']).optional(),
+    publishedDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+    status: z.enum(['available', 'out of stock', 'discontinued']),
     imageUrls: z.array(z.string().url()).optional(),
-    description: z.string().optional()
+    description: z.string().optional(),
 });
 
 export const bookUpdateSchema = bookSchema.partial();
