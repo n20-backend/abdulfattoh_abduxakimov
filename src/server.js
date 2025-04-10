@@ -16,6 +16,10 @@ app.use('/api/genres', genreRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/orders', orderRoutes);
 
+app.get('/', (req, res) => {
+  res.send('Ishlayapti');
+});
+
 app.use(errorHandler);
 
 app.listen(PORT, () => {
